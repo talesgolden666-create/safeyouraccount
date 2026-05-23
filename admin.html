@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LetaSafe — Admin Panel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #04070f;
+      --sidebar: #060a15;
+      --card: #0b1020;
+      --blue: #2563ff;
+      --bl: #4d80ff;
+      --gb: rgba(255,255,255,0.07);
+      --glass: rgba(255,255,255,0.03);
+      --text: #eef2ff;
+      --muted: #7888aa;
+      --ok: #0fd98a;
+      --danger: #ff5f5f;
+    }
+    body { font-family: "DM Sans", sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; overflow-x: hidden; }
+
+    /* ── LOGIN ── */
+    #loginPage {
+      width: 100%; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;
+      background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(37,99,255,0.13) 0%, transparent 60%);
+    }
+    .lcard {
+      background: linear-gradient(145deg,#0c1122,#070b18);
+      border: 1px solid var(--gb); border-radius: 24px; padding: 48px 40px;
+      width: 100%; max-width: 420px;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05);
+      animation: fadeUp .5s ease both;
+    }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(24px);} to{opacity:1;transform:translateY(0);} }
+    .llogo { display:flex;align-items:center;gap:10px;font-family:"Syne",sans-serif;font-size:1.35rem;font-weight:700;margin-bottom:4px; }
+    .lhex { width:34px;height:34px;background:linear-gradient(135deg,#1a4fff,#4d80ff);clip-path:polygon(50% 0%,95% 25%,95% 75%,50% 100%,5% 75%,5% 25%);display:flex;align-items:center;justify-content:center;font-size:1rem;box-shadow:0 0 18px rgba(37,99,255,0.6); }
+    .llogo strong { color:var(--bl); }
+    .lsub { font-size:0.82rem;color:var(--muted);margin-bottom:32px;margin-top:4px; }
+    .fg { display:flex;flex-direction:column;gap:8px;margin-bottom:18px; }
+    .fg label { font-size:0.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:500; }
+    .fg input { padding:13px 16px;background:rgba(255,255,255,0.04);border:1px solid var(--gb);border-radius:12px;color:var(--text);font-family:"DM Sans",sans-serif;font-size:.95rem;outline:none;transition:border-color .2s,box-shadow .2s; }
+    .fg input:focus { border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,255,.14);background:rgba(37,99,255,.05); }
+    .fg input::placeholder { color:#2a3550; }
+    .btnLogin { width:100%;padding:14px;background:linear-gradient(135deg,#1a4fff,#4d80ff);color:#fff;border:none;border-radius:12px;font-family:"DM Sans",sans-serif;font-size:1rem;font-weight:500;cursor:pointer;transition:transform .2s,box-shadow .2s;box-shadow:0 8px 28px rgba(37,99,255,.4);margin-top:6px; }
+    .btnLogin:hover { transform:translateY(-2px);box-shadow:0 12px 36px rgba(37,99,255,.55); }
+    .btnLogin:disabled { opacity:.6;cursor:not-allowed;transform:none; }
+    .lerr { background:rgba(255,95,95,.1);border:1px solid rgba(255,95,95,.25);border-radius:10px;padding:10px 14px;font-size:.84rem;color:var(--danger);display:none;margin-top:12px; }
+    .lerr.on { display:block; }
+    .backlink { display:block;text-align:center;margin-top:20px;font-size:.82rem;color:var(--muted);text-decoration:none;transition:color .2s; }
+    .backlink:hover { color:var(--bl); }
+
+    /* ── DASHBOARD ── */
+    #dashboard { display:none;width:100%;min-height:100vh; }
+    #dashboard.on { display:flex; }
+
+    /* SIDEBAR */
+    .sidebar { width:240px;min-height:100vh;background:var(--sidebar);border-right:1px solid var(--gb);display:flex;flex-direction:column;padding:24px 0;flex-shrink:0;position:sticky;top:0;height:100vh; }
+    .slogo { display:flex;align-items:center;gap:10px;font-family:"Syne",sans-serif;font-size:1.2rem;font-weight:700;padding:0 22px 24px;border-bottom:1px solid var(--gb);margin-bottom:20px; }
+    .slogo strong { color:var(--bl); }
+    .navitem { display:flex;align-items:center;gap:12px;padding:12px 22px;font-size:.88rem;color:var(--muted);cursor:pointer;transition:background .2s,color .2s;border-right:3px solid transparent;text-decoration:none; }
+    .navitem.act, .navitem:hover { background:rgba(37,99,255,.1);color:var(--bl); }
+    .navitem.act { border-right-color:var(--blue); }
+    .navitem .ni { font-size:1rem;width:20px;text-align:center; }
+    .sbottom { margin-top:auto;padding:20px 22px;border-top:1px solid var(--gb);display:flex;flex-direction:column;gap:10px; }
+    .homelink { display:flex;align-items:center;gap:8px;padding:9px 14px;background:rgba(37,99,255,.08);border:1px solid rgba(37,99,255,.18);border-radius:10px;color:var(--bl);font-size:.82rem;text-decoration:none;transition:background .2s; }
+    .homelink:hover { background:rgba(37,99,255,.15); }
+    .btnLogout { width:100%;padding:10px;background:rgba(255,95,95,.08);border:1px solid rgba(255,95,95,.2);border-radius:10px;color:var(--danger);font-family:"DM Sans",sans-serif;font-size:.83rem;cursor:pointer;transition:background .2s; }
+    .btnLogout:hover { background:rgba(255,95,95,.18); }
+
+    /* MAIN */
+    .main { flex:1;padding:36px 40px;overflow-y:auto;background:var(--bg); }
+    .phead { display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:32px;flex-wrap:wrap;gap:16px; }
+    .ptitle { font-family:"Syne",sans-serif;font-size:1.7rem;font-weight:700; }
+    .ptitle span { color:var(--bl); }
+    .psub { font-size:.83rem;color:var(--muted);margin-top:4px; }
+
+    /* STATS */
+    .stats { display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:32px; }
+    .scard { background:linear-gradient(145deg,#0c1122,#070b18);border:1px solid var(--gb);border-radius:16px;padding:22px 24px;position:relative;overflow:hidden;transition:transform .2s; }
+    .scard::before { content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--blue),var(--bl)); }
+    .scard:hover { transform:translateY(-2px); }
+    .slabel { font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px; }
+    .sval { font-family:"Syne",sans-serif;font-size:2rem;font-weight:700;color:var(--bl); }
+    .sico { position:absolute;right:18px;top:50%;transform:translateY(-50%);font-size:2rem;opacity:.1; }
+
+    /* SEARCH */
+    .searchbox { position:relative;max-width:300px; }
+    .searchbox input { width:100%;padding:10px 16px 10px 40px;background:rgba(255,255,255,0.04);border:1px solid var(--gb);border-radius:10px;color:var(--text);font-family:"DM Sans",sans-serif;font-size:.86rem;outline:none;transition:border-color .2s,box-shadow .2s; }
+    .searchbox input:focus { border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,255,.12); }
+    .searchbox input::placeholder { color:#2a3550; }
+    .searchbox svg { position:absolute;left:13px;top:50%;transform:translateY(-50%);opacity:.45;pointer-events:none; }
+
+    /* TABLE CARD */
+    .tcard { background:linear-gradient(145deg,#0c1122,#070b18);border:1px solid var(--gb);border-radius:16px;overflow:hidden; }
+    .thead { display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--gb);flex-wrap:wrap;gap:10px; }
+    .ttitle { font-family:"Syne",sans-serif;font-size:.95rem;font-weight:600; }
+    .livebadge { display:flex;align-items:center;gap:6px;font-size:.73rem;color:var(--ok);background:rgba(15,217,138,.08);border:1px solid rgba(15,217,138,.2);border-radius:100px;padding:4px 12px; }
+    .ldot { width:6px;height:6px;border-radius:50%;background:var(--ok);animation:blink 1.5s ease infinite; }
+    @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:.2;} }
+    .tscroll { overflow-x:auto; }
+    table { width:100%;border-collapse:collapse; }
+    thead tr { border-bottom:1px solid var(--gb); }
+    th { padding:13px 22px;text-align:left;font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;font-weight:500; }
+    td { padding:13px 22px;font-size:.86rem;color:var(--text);border-bottom:1px solid rgba(255,255,255,.03); }
+    tr:last-child td { border-bottom:none; }
+    tbody tr { transition:background .2s; }
+    tbody tr:hover { background:rgba(37,99,255,.04); }
+    .spill { display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:100px;font-size:.73rem;font-weight:500;background:rgba(15,217,138,.1);border:1px solid rgba(15,217,138,.2);color:var(--ok); }
+    .btnDel { padding:6px 14px;background:rgba(255,95,95,.07);border:1px solid rgba(255,95,95,.18);border-radius:8px;color:var(--danger);font-family:"DM Sans",sans-serif;font-size:.78rem;cursor:pointer;transition:background .2s,transform .1s; }
+    .btnDel:hover { background:rgba(255,95,95,.18);transform:scale(1.04); }
+    .empty { padding:60px 24px;text-align:center;color:var(--muted);font-size:.88rem; }
+    .empty .eico { font-size:2.5rem;display:block;margin-bottom:12px;opacity:.3; }
+    .loadrow td { text-align:center;padding:40px;color:var(--muted); }
+
+    /* AVATAR */
+    .av { width:30px;height:30px;border-radius:50%;background:rgba(37,99,255,.15);border:1px solid rgba(37,99,255,.25);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:600;color:var(--bl);flex-shrink:0; }
+
+    ::-webkit-scrollbar { width:5px; }
+    ::-webkit-scrollbar-track { background:transparent; }
+    ::-webkit-scrollbar-thumb { background:rgba(37,99,255,.25);border-radius:3px; }
+
+    @media(max-width:768px) {
+      .sidebar { display:none; }
+      .main { padding:20px 16px; }
+      th:nth-child(2),td:nth-child(2) { display:none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginPage">
+  <div class="lcard">
+    <div class="llogo">
+      <div class="lhex">&#11042;</div>
+      Leta<strong>Safe</strong>
+      <small style="color:var(--muted);font-size:.7rem;font-weight:400;margin-left:4px;">Admin</small>
+    </div>
+    <p class="lsub">Sign in to access the admin dashboard</p>
+    <div class="fg">
+      <label>Email Address</label>
+      <input type="email" id="aEmail" placeholder="admin@leta.com" autocomplete="email"/>
+    </div>
+    <div class="fg">
+      <label>Password</label>
+      <input type="password" id="aPass" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;" autocomplete="current-password"/>
+    </div>
+    <button class="btnLogin" id="loginBtn">Sign In</button>
+    <div class="lerr" id="loginErr">Invalid credentials. Please try again.</div>
+    <a href="index.html" class="backlink">&#8592; Back to LetaSafe Home</a>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <aside class="sidebar">
+    <div class="slogo">
+      <div class="lhex" style="width:28px;height:28px;font-size:.85rem;">&#11042;</div>
+      Leta<strong>Safe</strong>
+    </div>
+    <a class="navitem act">
+      <span class="ni">&#128202;</span> Accounts
+    </a>
+    <div class="sbottom">
+      <a href="index.html" class="homelink">&#127968; Back to Site</a>
+      <button class="btnLogout" id="logoutBtn">Sign Out</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="phead">
+      <div>
+        <h1 class="ptitle">Account <span>Overview</span></h1>
+        <p class="psub">All protected Leta accounts — live updates</p>
+      </div>
+      <div class="searchbox">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" id="searchInput" placeholder="Search username or ID..."/>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="scard">
+        <div class="slabel">Total Accounts</div>
+        <div class="sval" id="totalCount">—</div>
+        <div class="sico">&#128737;</div>
+      </div>
+      <div class="scard">
+        <div class="slabel">Protection Status</div>
+        <div class="sval" style="font-size:1.05rem;padding-top:6px;color:var(--ok);">All Active</div>
+        <div class="sico">&#9989;</div>
+      </div>
+      <div class="scard">
+        <div class="slabel">Database</div>
+        <div class="sval" style="font-size:1.05rem;padding-top:6px;color:var(--bl);">Firestore</div>
+        <div class="sico">&#9889;</div>
+      </div>
+    </div>
+
+    <div class="tcard">
+      <div class="thead">
+        <span class="ttitle">Protected Accounts</span>
+        <span class="livebadge"><span class="ldot"></span> Live</span>
+      </div>
+      <div class="tscroll">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Username</th>
+              <th>User ID</th>
+              <th>Time Added</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="tbody">
+            <tr class="loadrow"><td colspan="6">Loading accounts...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script type="module">
+import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+                            from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, onSnapshot, deleteDoc, doc, query, orderBy }
+                            from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const app  = initializeApp({
+  apiKey:            "AIzaSyD_Gw2BENhB_AUWm314Cd56zbym6rpYCoM",
+  authDomain:        "letasafe-9c818.firebaseapp.com",
+  databaseURL:       "https://letasafe-9c818-default-rtdb.firebaseio.com",
+  projectId:         "letasafe-9c818",
+  storageBucket:     "letasafe-9c818.firebasestorage.app",
+  messagingSenderId: "577483260063",
+  appId:             "1:577483260063:web:875fae11c07bc3f5eae2aa",
+  measurementId:     "G-0VVJ9HQHYE"
+});
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+const loginPage  = document.getElementById("loginPage");
+const dashboard  = document.getElementById("dashboard");
+const loginBtn   = document.getElementById("loginBtn");
+const logoutBtn  = document.getElementById("logoutBtn");
+const loginErr   = document.getElementById("loginErr");
+const tbody      = document.getElementById("tbody");
+const totalCount = document.getElementById("totalCount");
+const searchInp  = document.getElementById("searchInput");
+
+let allRecords = [], unsub = null;
+
+// Auth state
+onAuthStateChanged(auth, user => {
+  if (user) { showDash(); } else { showLogin(); }
+});
+
+// Login
+loginBtn.onclick = async () => {
+  const email = document.getElementById("aEmail").value.trim();
+  const pass  = document.getElementById("aPass").value.trim();
+  if (!email || !pass) { showErr("Please enter email and password."); return; }
+  loginBtn.textContent = "Signing in..."; loginBtn.disabled = true;
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+    loginErr.classList.remove("on");
+  } catch(e) {
+    showErr(friendlyErr(e.code));
+    loginBtn.textContent = "Sign In"; loginBtn.disabled = false;
+  }
+};
+["aEmail","aPass"].forEach(id => {
+  document.getElementById(id).addEventListener("keydown", e => { if(e.key==="Enter") loginBtn.click(); });
+});
+
+// Logout
+logoutBtn.onclick = async () => { if(unsub) unsub(); await signOut(auth); };
+
+function showDash() {
+  loginPage.style.display = "none";
+  dashboard.classList.add("on");
+  subscribe();
+}
+function showLogin() {
+  loginPage.style.display = "flex";
+  dashboard.classList.remove("on");
+  tbody.innerHTML = '<tr class="loadrow"><td colspan="6">Loading accounts...</td></tr>';
+  allRecords = [];
+  document.getElementById("aEmail").value = "";
+  document.getElementById("aPass").value  = "";
+}
+function showErr(msg) { loginErr.textContent = msg; loginErr.classList.add("on"); }
+
+// Realtime listener
+function subscribe() {
+  const q = query(collection(db,"accounts"), orderBy("timestamp","desc"));
+  unsub = onSnapshot(q, snap => {
+    allRecords = snap.docs.map(d => ({id:d.id,...d.data()}));
+    totalCount.textContent = allRecords.length;
+    render(allRecords);
+  }, err => {
+    console.error(err);
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;color:#ff6b6b;">Firestore error — check rules.</td></tr>`;
+  });
+}
+
+// Render
+function render(recs) {
+  if (!recs.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty"><span class="eico">&#128737;</span>No accounts found.</div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = recs.map((r,i) => `
+    <tr id="row-${r.id}">
+      <td style="color:var(--muted);font-size:.78rem;">${i+1}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:9px;">
+          <div class="av">${esc(r.username||"?")[0].toUpperCase()}</div>
+          <span style="font-weight:500;">${esc(r.username||"—")}</span>
+        </div>
+      </td>
+      <td style="font-family:monospace;font-size:.83rem;color:var(--muted);">${esc(r.userid||"—")}</td>
+      <td style="font-size:.8rem;color:var(--muted);">${fmt(r.timestamp)}</td>
+      <td><span class="spill">&#9989; ${esc(r.status||"Account Added")}</span></td>
+      <td><button class="btnDel" onclick="delRec('${r.id}')">Delete</button></td>
+    </tr>`).join("");
+}
+
+// Search
+searchInp.addEventListener("input", () => {
+  const q = searchInp.value.toLowerCase().trim();
+  const filtered = q ? allRecords.filter(r =>
+    (r.username||"").toLowerCase().includes(q) ||
+    (r.userid||"").toLowerCase().includes(q)
+  ) : allRecords;
+  totalCount.textContent = filtered.length;
+  render(filtered);
+});
+
+// Delete
+window.delRec = async id => {
+  if (!confirm("Delete this record? Cannot be undone.")) return;
+  const row = document.getElementById("row-"+id);
+  if (row) { row.style.transition="opacity .3s,transform .3s"; row.style.opacity="0"; row.style.transform="translateX(20px)"; await new Promise(r=>setTimeout(r,300)); }
+  try { await deleteDoc(doc(db,"accounts",id)); }
+  catch(e) { console.error(e); alert("Delete failed. Check Firestore rules."); if(row){row.style.opacity="1";row.style.transform="";} }
+};
+
+function fmt(ts) {
+  if (!ts) return "—";
+  try { const d=ts.toDate?ts.toDate():new Date(ts); return d.toLocaleString("en-IN",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}); }
+  catch { return "—"; }
+}
+function esc(s) {
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+function friendlyErr(code) {
+  return {"auth/user-not-found":"No account with this email.","auth/wrong-password":"Wrong password.","auth/invalid-email":"Invalid email.","auth/too-many-requests":"Too many attempts. Try later.","auth/invalid-credential":"Invalid email or password."}[code]||"Login failed. Try again.";
+}
+</script>
+
+<!--
+==============================================
+FIREBASE CONFIG REFERENCE
+==============================================
+import { initializeApp } from "firebase/app";
+const firebaseConfig = {
+  apiKey: "AIzaSyD_Gw2BENhB_AUWm314Cd56zbym6rpYCoM",
+  authDomain: "letasafe-9c818.firebaseapp.com",
+  databaseURL: "https://letasafe-9c818-default-rtdb.firebaseio.com",
+  projectId: "letasafe-9c818",
+  storageBucket: "letasafe-9c818.firebasestorage.app",
+  messagingSenderId: "577483260063",
+  appId: "1:577483260063:web:875fae11c07bc3f5eae2aa",
+  measurementId: "G-0VVJ9HQHYE"
+};
+==============================================
+-->
+</body>
+</html>
